@@ -1,0 +1,94 @@
+import os
+import time
+#import imghdr
+import smtplib
+import RPi.GPIO as gpio
+from picamera import PiCamera
+#from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+#from email.mime.base import MIMEBase
+
+
+#sendmail function starts here
+fromaddr = 'ustaadkumari30@gmail.com'
+toaddr = ['piyushgupta797@gmail.com','luckysolanki71233@gmail.com','tiwari.sandarbh2603@gmail.com','delta28007@gmail.com','mayankkohli326@gmail.com','rishbhayadav91@gmail.com']
+#toaddr = 'luckysolanki71233@gmail.com'
+password = 'uSTAAD01'
+subject = 'This is a test message.....'
+#body = 'hello sandarbh, i am sending you the images of iron man,please have a look at all of them....!!!!!'
+data = ""
+def SendMail():
+        os.chdir('/home/pi/Desktop/INTRUDER')
+        msg = MIMEMultipart()
+        msg['Subject'] = subject
+        msg['From'] = fromaddr
+        msg['To'] = toaddr #','.join(toaddr)
+
+        with open('intruder_alert.txt') as f:
+            msg.attach(MIMEText(f.read()))
+        #msg.attach(data)    
+            #msg.set_content(f.read())
+        os.chdir('/home/pi/Desktop')
+        print(os.getcwd())
+        directory = os.getcwd()
+        #directory = os.fsencode(directory_in_str)
+        
+        for filename in os.listdir(directory):
+            #filename = os.fsdecode(file)
+            if filename.endswith(".jpg"):
+                with open(filename,'rb') as fp:
+                    #image_data = fp.read()
+                    #msg.add_attachment(image_data, maintype = 'image', subtype = imghdr.what(None,image_data))
+                    image = MIMEImage(fp.read())
+                    msg.attach(image)
+
+            s = smtplib.SMTP('smtp.gmail.com',587)
+            s.ehlo()
+            s.starttls()
+            s.login(fromaddr,password)
+            s.sendmail(fromaddr,toaddr,msg.as_string())
+            s.quit()
+            print("hey intruder image has been sent........")
+            #print("email sent to "+ toaddr +" successfully...!!!")
+#SendMail()
+#print(os.getcwd())
+
+
+#ultrasonic code starts
+gpio.setmode(gpio.BCM)
+trig = 23
+echo = 24
+print("dist memet in progress.....")
+gpio.setup(trig,gpio.OUT)
+gpio.setup(echo,gpio.IN)
+
+camera = PiCamera()
+
+while True:
+    gpio.output(trig,False)
+    print("waiting for sensor to settle.......")
+    time.sleep(2)
+    gpio.output(trig,True)
+    time.sleep(0.01)
+    gpio.output(trig,False)
+    while gpio.input(echo)==0:
+        pulse_start = time.time()
+    while gpio.input(echo)==1:
+        pulse_end = time.time()
+
+    pulse_dur = pulse_end-pulse_start
+    dist = pulse_dur*17150
+    dist = round(dist,2)
+    if dist<20:
+        camera.start_preview()
+        camera.rotation = 180
+        data=time.strftime("%d_%b_%Y|%H:%M:%S")
+        camera.capture("%s.jpg"%data)
+        print(data)
+        time.sleep(2)
+        camera.stop_preview()
+        SendMail()
+    else:
+        print("out of range.......!!!")

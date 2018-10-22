@@ -15,9 +15,9 @@ from email.mime.image import MIMEImage
 fromaddr = 'ustaadkumari30@gmail.com'
 toaddr = ['piyushgupta797@gmail.com','luckysolanki71233@gmail.com','tiwari.sandarbh2603@gmail.com','delta28007@gmail.com','mayankkohli326@gmail.com','rishbhayadav91@gmail.com']
 #toaddr = 'luckysolanki71233@gmail.com'
-password = 'uSTAAD01'
+password = ''
 subject = 'This is a test message.....'
-#body = 'hello sandarbh, i am sending you the images of iron man,please have a look at all of them....!!!!!'
+
 data = ""
 def SendMail():
         os.chdir('/home/pi/Desktop/INTRUDER')
